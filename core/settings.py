@@ -33,7 +33,8 @@ DJANGO_APPS = [
     'django.contrib.staticfiles',
 ]
 PROJECT_APPS = [
-
+    'apps.blog',
+    'apps.category',
 ]
 
 THIRD_PARTY_APPS =[
@@ -51,7 +52,7 @@ CKEDITOR_CONFIGS = {
         'autoParagraph': False
     }
 }
-CKEDITOR_UPLOAD_PATH = "/media/"
+CKEDITOR_UPLOAD_PATH = "uploads/"
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -119,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
 LANGUAGE_CODE = 'es'
-TIME_ZONE = 'UTC-5'
+TIME_ZONE = 'america/Bogota'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
@@ -144,7 +145,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framewok.permissions.IsAuthenticatedOrReadOnly'
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly'
     ],
 }
 
