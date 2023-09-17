@@ -19,9 +19,9 @@ class BlogListView(APIView):
     
     def get(self, request, format=None):
         
-        if Post.objects.all().exists():
+        if Post.postsObjects.all().exists():
             
-            posts = Post.objects.all()
+            posts = Post.postsObjects.all()
             paginator = SmallSetPagination()
             results = paginator.paginate_queryset(posts, request)
             serializer = PostListSerializer(posts, many=True)
@@ -36,18 +36,18 @@ class ListPostsByCategoryView(APIView):
     
     def get(self, request, format=None):
         
-        if Post.objects.all().exists():
+        if Post.postsObjects.all().exists():
             
             slug = request.query_params.get('slug')
             category = Category.objects.get(slug=slug)
-            posts = Post.objects.order_by('-published').all()
+            posts = Post.postsObjects.order_by('-published').all()
             
             #Filtrar cuando la categoría es el mismo padre
             if Category.objects.filter(parent=category).exists():
                 posts = posts.filter(category=category)
             #Si la categoría tiene hijos, se filtra por la categoría padre y sus hijos
             else:
-                sub_categories = Category.objects.filter(parent=category)
+                sub_categories = Category.postsObjects.filter(parent=category)
                 filtered_categories = [category]
                 
                 for cat in sub_categories:
@@ -66,11 +66,13 @@ class ListPostsByCategoryView(APIView):
         
 class PostDetailView(APIView):
     
+    permission_classes = (permissions.AllowAny,)
+    
     def get(self, request, slug, format=None):
         
-        if Post.objects.filter(slug=slug).exists():
+        if Post.postsObjects.filter(slug=slug).exists():
             
-            post = Post.objects.get(slug=slug)
+            post = Post.postsObjects.get(slug=slug)
             serializer = PostSerializer(post)
             #HTTP_X_FORWARDED_FOR nos permite obtener información del buscador
             address = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -79,7 +81,7 @@ class PostDetailView(APIView):
             else:
                 ip = request.META.get('REMOTE_ADDR')
             
-            if not ViewCount.objects.filter(post=post, ip_address=ip):
+            if not ViewCount.postsObjects.filter(post=post, ip_address=ip):
                 view = ViewCount(post=post, ip_address=ip)
                 view.save()
                 post.views += 1
@@ -91,10 +93,12 @@ class PostDetailView(APIView):
         
 class SearchBlogView(APIView):
     
+    permission_classes = (permissions.AllowAny,)
+    
     def get(self, request, format=None):
         
         search_term = request.query_params.get('s')
-        matches = Post.objects.filter(
+        matches = Post.postsObjects.filter(
                                         Q(title__icontains=search_term) |
                                         Q(descriptions__icontains=search_term) |
                                         Q(category__name__icontains=search_term)
