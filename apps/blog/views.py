@@ -1,3 +1,4 @@
+from django.db.models.query_utils import Q
 from rest_framework import permissions
 from rest_framework import status
 from rest_framework.response import Response
@@ -62,3 +63,42 @@ class ListPostsByCategoryView(APIView):
             return paginator.get_paginated_response({'posts':serializer.data})
         else:
             return Response({'error':'No posts found'}, status=status.HTTP_404_NOT_FOUND)
+        
+class PostDetailView(APIView):
+    
+    def get(self, request, slug, format=None):
+        
+        if Post.objects.filter(slug=slug).exists():
+            
+            post = Post.objects.get(slug=slug)
+            serializer = PostSerializer(post)
+            #HTTP_X_FORWARDED_FOR nos permite obtener información del buscador
+            address = request.META.get('HTTP_X_FORWARDED_FOR')
+            if address:
+                ip = address.split(',')[-1].strip()
+            else:
+                ip = request.META.get('REMOTE_ADDR')
+            
+            if not ViewCount.objects.filter(post=post, ip_address=ip):
+                view = ViewCount(post=post, ip_address=ip)
+                view.save()
+                post.views += 1
+                post.save()
+                
+            return Response({'post':serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Post doesnt exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+class SearchBlogView(APIView):
+    
+    def get(self, request, format=None):
+        
+        search_term = request.query_params.get('s')
+        matches = Post.objects.filter(
+                                        Q(title__icontains=search_term) |
+                                        Q(descriptions__icontains=search_term) |
+                                        Q(category__name__icontains=search_term)
+                                    )
+        serializer = PostListSerializer(matches, many=True)
+        return Response({'filter_posts':serializer.data}, status=status.HTTP_200_OK)
+    
