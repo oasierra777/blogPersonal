@@ -31,7 +31,7 @@ class Post(models.Model):
     status = models.CharField(max_length=10, choices=options, default='draft')
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
     objects = models.Manager()
-    postsObjects = PostObjects()
+    postsobjects = PostObjects()
     
     class Meta:
         ordering = ('-published',)
@@ -42,7 +42,7 @@ class Post(models.Model):
     def get_view_count(self):
         views = ViewCount.objects.filter(post=self).count()
         return views
-    
+
 class ViewCount(models.Model):
     
     post = models.ForeignKey(Post, related_name='blog_view_count', on_delete=models.CASCADE)
